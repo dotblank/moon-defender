@@ -14,7 +14,7 @@ BoundingShape.prototype.getBorderPoint = function(relpos) {
 }
 
 BoundingShape.prototype.checkCollision = function(relpos, shape) {
-    var border = shape.getBorderPoint().add(relpos);
+    var border = shape.getBorderPoint(relpos).add(relpos);
     return this.check(border);
 }
 
@@ -35,15 +35,15 @@ BoundingBox.prototype.getBorderPoint = function(relpos) {
     border.inverse();
 
     var constraints = [{x: this.width, y: 0},
-                       {x: -this.width, y: 0 }
-                       {y: this.height, x: 0}
-                       {y: this.-height, x: 0}];
+                       {x: -this.width, y: 0},
+                       {y: this.height, x: 0},
+                       {y: -this.height, x: 0}];
 
     var chosenConstraint = {c: null, l: Infinity};
     for(var c in constraints) {
         var cx = border.x - constraints[c].x;
-        var cy = border.y - constraints[c].y;
-        var l - new Victor(cx,cy).lengthSq();
+	var cy = border.y - constraints[c].y;
+	var l = new Victor(cx,cy).lengthSq();
         if(l < chosenConstraint.l) {
             chosenConstraint.c = c;
             chosenConstraint.l = l;
@@ -53,7 +53,7 @@ BoundingBox.prototype.getBorderPoint = function(relpos) {
         return relpos.copy().inverse();
     }
     var borderPoint = new Victor(0,0);
-    if(chosenConstrain.c != null} {
+    if(chosenConstrain.c != null) {
         if(constraints[c].x != 0) {
             x = constraints[c].x;
             y = Math.tan(border.horizontalAngle())*x;
