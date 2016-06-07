@@ -9,16 +9,62 @@ BoundingShape.prototype.check = function(relpos) {
     return false;
 }
 
+BoundingShape.prototype.getBorderPoint = function(relpos) {
+    return new Victor(0,0);
+}
+
+BoundingShape.prototype.checkCollision = function(relpos, shape) {
+    var border = shape.getBorderPoint().add(relpos);
+    return this.check(border);
+}
+
 function BoundingBox(width, height) {
-    this.width = width;
-    this.height = height;
+    this.width = width/2;
+    this.height = height/2;
 }
 
 BoundingBox.prototype = new BoundingShape();
 
 BoundingBox.prototype.check = function(relpos) {
-    return relpos.x > 0 && relpos.x < this.width &&
-        relpos.y > 0 && relpos.y < this.height;
+    return relpos.x > -this.width && relpos.x < this.width &&
+        relpos.y > -this.height && relpos.y < this.height;
+}
+
+BoundingBox.prototype.getBorderPoint = function(relpos) {
+    var border = relpos.copy();
+    border.inverse();
+
+    var constraints = [{x: this.width, y: 0},
+                       {x: -this.width, y: 0 }
+                       {y: this.height, x: 0}
+                       {y: this.-height, x: 0}];
+
+    var chosenConstraint = {c: null, l: Infinity};
+    for(var c in constraints) {
+        var cx = border.x - constraints[c].x;
+        var cy = border.y - constraints[c].y;
+        var l - new Victor(cx,cy).lengthSq();
+        if(l < chosenConstraint.l) {
+            chosenConstraint.c = c;
+            chosenConstraint.l = l;
+        }
+    }
+    if(relpos.lengthSq() < chosenConstraint.l) {
+        return relpos.copy().inverse();
+    }
+    var borderPoint = new Victor(0,0);
+    if(chosenConstrain.c != null} {
+        if(constraints[c].x != 0) {
+            x = constraints[c].x;
+            y = Math.tan(border.horizontalAngle())*x;
+            borderPoint = new Victor(x,y);
+        } else {
+            y = constraints[c].y;
+            x = Math.tan(border.verticalAngle())*y;
+            borderPoint = new Victor(x,y);
+        }
+    }
+    return borderPoint; 
 }
 
 function BoundingCircle(r) {
@@ -27,10 +73,8 @@ function BoundingCircle(r) {
 
 BoundingCircle.prototype = new BoundingShape();
 
-BoundingCircle.prototype.checkCollision = function(relpos, circle) {
-    // needs to use right comparison based on each object's type
-    var centerToCenter = circle.radius + this.radius;
-    return relpos.lengthSq() < centerToCenter * centerToCenter;
+BoundingCircle.prototype.getBorderPoint = function(relpos) {
+    return relpos.copy().normalize().inverse().multiplyScalar(this.radius);
 }
 
 // Checks whether a location is within a bounding circle
